@@ -1,0 +1,13 @@
+﻿global using MediatR;
+global using System.Data.Common;
+global using EventBus.Abstractions;
+global using IntegrationEventLogEF;
+global using IntegrationEventLogEF.Services;
+global using Messaging.Infrastructure;
+global using Microsoft.EntityFrameworkCore;
+global using EventBus.Events;
+global using Microsoft.Extensions.Logging;
+global using Messaging.Application.IntegrationEvents;
+global using Messaging.Domain.AggregatesModel.MessageAggregate;
+global using EventBus.Extensions;
+global using Serilog.Context;

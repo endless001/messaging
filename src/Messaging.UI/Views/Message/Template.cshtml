@@ -1,0 +1,188 @@
+@{
+    ViewData["Title"] = "Message Template Page";
+}
+<style>
+
+#app{
+  width: 700px;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+.el-message-box {
+ width: 600px;
+}
+.preview-content{
+   width: 570px;
+   height: 250px;
+}
+ 
+td,th {
+    padding: 0;
+}
+.vui-table { 
+    width: 700px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    empty-cells: show;
+    border: 1px solid #cbcbcb;
+}
+.vui-table td, .vui-table th {
+    border-left: 1px solid #cbcbcb;
+    border-width: 0 0 0 1px;
+    font-size: inherit;
+    margin: 0;
+    overflow: visible;
+    padding: .5em 1em;
+    border-width: 0 0 1px 0;
+    border-bottom: 1px solid #cbcbcb;
+} 
+
+.vui-table thead {
+    background-color: #fafafa;
+    color: #000;
+    text-align: left;
+    vertical-align: bottom;
+}
+
+.vui-table td {
+    background-color: transparent;
+}
+
+.vui-table tbody>tr:last-child>td {
+    border-bottom-width: 0;
+}
+</style>
+<div id="app">
+  
+<el-form ref="form" :model="form" label-width="80px">
+    <el-form-item label="模板名称">
+        <el-input v-model="form.name"></el-input>
+    </el-form-item>
+    <el-form-item label="模板类型">
+          <el-select v-model="form.type" placeholder="请选择">
+            <el-option
+              v-for="item in types"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+    </el-form-item>
+    <el-form-item label="模板标题">
+        <el-input v-model="form.title"></el-input>
+    </el-form-item>
+    <el-form-item label="消息内容">
+        <el-input type="textarea" :rows="6" @@blur="handleChange"  v-model="form.content"></el-input>
+    </el-form-item>
+    
+    <div style="margin-bottom: 5px;">
+        <table class="vui-table">
+            <thead>
+                <tr>
+                    <th>属性名称</th>
+                    <th>属性描述</th>
+                    <th>允许搜索</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in properties">
+                    <td>
+                       {{item.key}}
+                    </td>
+                    <td>
+                        <el-input v-model="item.description"></el-input>
+                    </td>
+                    <td>
+                        <el-checkbox v-model="item.allowSearch">允许</el-checkbox>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <el-form-item>
+        <el-button @@click="onSubmit" type="primary">立即创建</el-button>
+        <el-button @@click="preview">预览模版</el-button>
+    </el-form-item>
+</el-form>
+</div>
+@section Scripts {
+    <script>
+    
+    function unique(array) {
+        return Array.from(new Set(array));
+    }
+        
+    new Vue({
+      el: '#app',
+      data: ()=> {
+        return {
+         form: {
+               name: '',
+               type:'',
+               title:'',
+               content:''
+             },
+          properties:[],
+          types: [
+              {
+                  value: 1,
+                  label: "Notification"
+              },
+              {
+                  value: 2,
+                  label: "SMS"
+              },
+              {
+                  value: 3,
+                  label: "Email"
+              }
+          ]
+         }
+      },
+      methods:{
+          handleChange(){
+             let matches = this.form.content.match(/[^{{]+(?=}})/g);
+             let newProperties = unique(matches);
+             
+             this.properties = newProperties.map(x=>({
+                 key:x
+             }));
+          },
+          preview() {
+              this.$alert(`<div class="preview-content">${this.form.content}</div>`, '预览', {
+                  dangerouslyUseHTMLString: true,
+                  showClose:false
+              });
+          },
+          async onSubmit() {
+              let data = {
+                  templateProperties:this.properties,
+                  ...this.form
+              };
+              let response = await fetch("http://localhost:5000/api/v1/Message/templates", {
+                  method: 'POST',
+                  mode: 'cors', 
+                  cache: 'no-cache',
+                  credentials: 'same-origin', 
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  redirect: 'follow', 
+                  referrerPolicy: 'no-referrer', 
+                  body: JSON.stringify(data) 
+                });
+               if (response.status === 200){
+                  this.$notify({
+                         title: '提交成功',
+                         message: '提交模板成功！',
+                         type: 'success'
+                       });
+                   this.$refs['form'].resetFields();
+               }
+          }
+      }
+     });
+    </script>
+}
