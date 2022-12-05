@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Messaging.Application.IntegrationEvents.Events;
+using Messaging.Domain.Exceptions;
 
 namespace Messaging.Application.Commands;
 
@@ -23,6 +24,14 @@ public class CreateMessageCommandHandler : IRequestHandler<CreateMessageCommand,
 
     public async Task<bool> Handle(CreateMessageCommand request, CancellationToken cancellationToken)
     {
+
+        var template = await _messageRepository.GetTemplateAsync(request.TemplateId);
+        
+        if (template is null)
+        {
+            throw new MessagingDomainException("error template");
+        }
+
         var message = new Message
         {
             ToUser = request.ToUser,
@@ -39,11 +48,22 @@ public class CreateMessageCommandHandler : IRequestHandler<CreateMessageCommand,
         {
             return result;
         }
+        
+        return template.Id switch
+        {
+            1 => await CreateNotificationAsync(entity.Id, cancellationToken),
+            2 => true,
+            3 => true,
+            _ => result
+        };
+    }
 
+    private async Task<bool> CreateNotificationAsync(int messageId,CancellationToken cancellationToken)
+    {
         var command = new CreateNotificationCommand()
         {
-            MessageId = entity.Id
+            MessageId = messageId
         };
         return await _mediator.Send(command, cancellationToken);
-    }
+    } 
 }

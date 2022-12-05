@@ -32,7 +32,7 @@ public class NotificationQueries : INotificationQueries
                  title,content,read,created,template_name as templateName
              from notifications
               {0}
-             order by created
+             order by created desc
              limit @PageSize offset @Offset", where);
 
         using var reader = await connection.QueryMultipleAsync(query, new

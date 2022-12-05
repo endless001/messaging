@@ -26,6 +26,14 @@ public class MessageRepository : IMessageRepository
         return Task.FromResult(_context.Messages.Add(message).Entity);
     }
 
+    public async Task<Template> GetTemplateAsync(int templateId)
+    {
+        var template = await _context
+            .Templates
+            .FirstOrDefaultAsync(t=>t.Id==templateId);
+        return template;
+    }
+
     public Task<Template> AddTemplateAsync(Template template)
     {
         return Task.FromResult(_context.Templates.Add(template).Entity);
