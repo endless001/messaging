@@ -1,3 +1,5 @@
+using Messaging.API.Infrastructure;
+
 var configuration = GetConfiguration();
 
 Log.Logger = CreateSerilogLogger(configuration);
@@ -6,7 +8,14 @@ try
 {
     Log.Information("Configuring web host ({ApplicationContext})...", Program.AppName);
     var host = BuildWebHost(configuration, args);
-    
+    host.MigrateDbContext<MessagingContext>((context, services) =>
+    {
+        var env = services.GetService<IWebHostEnvironment>();
+        
+        new MessagingContextSeed()
+            .SeedAsync(context, env)
+            .Wait();
+    });
     host.Run();
 
     return 0;
