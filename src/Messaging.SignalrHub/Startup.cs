@@ -3,10 +3,14 @@ using Autofac.Extensions.DependencyInjection;
 using EventBus;
 using EventBus.Abstractions;
 using EventBusRabbitMQ;
+using FluentEmail.Core;
 using HealthChecks.UI.Client;
+using Messaging.SignalrHub.Infrastructure.AutofacModules;
 using Messaging.SignalrHub.IntegrationEvents.EventHandling;
 using Messaging.SignalrHub.IntegrationEvents.Events;
+using Messaging.SignalrHub.Options;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RabbitMQ.Client;
 
@@ -27,6 +31,8 @@ public class Startup
             .AddCustomHealthCheck(Configuration)
             .AddCustomIntegrations(Configuration)
             .AddEventBus(Configuration)
+            .AddEmailSender(Configuration)
+            .AddCustomConfiguration(Configuration)
             .AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
@@ -41,6 +47,7 @@ public class Startup
         //configure autofac
         var container = new ContainerBuilder();
         container.Populate(services);
+        container.RegisterModule(new ApplicationModule());
 
         return new AutofacServiceProvider(container.Build());
     }
@@ -76,8 +83,9 @@ public class Startup
     private void ConfigureEventBus(IApplicationBuilder app)
     {
         var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
-        
+
         eventBus.Subscribe<SendNotificationIntegrationEvent, SendNotificationIntegrationEventHandler>();
+        eventBus.Subscribe<SendEmailIntegrationEvent, SendEmailIntegrationEventHandler>();
     }
 }
 
@@ -157,6 +165,43 @@ public static class CustomExtensionMethods
         services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
 
         services.AddTransient<SendNotificationIntegrationEventHandler>();
+        services.AddTransient<SendEmailIntegrationEventHandler>();
+        return services;
+    }
+
+    public static IServiceCollection AddCustomConfiguration(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddOptions();
+        services.Configure<EmailOptions>(configuration);
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var problemDetails = new ValidationProblemDetails(context.ModelState)
+                {
+                    Instance = context.HttpContext.Request.Path,
+                    Status = StatusCodes.Status400BadRequest,
+                    Detail = "Please refer to the errors property for additional details."
+                };
+
+                return new BadRequestObjectResult(problemDetails)
+                {
+                    ContentTypes = { "application/problem+json", "application/problem+xml" }
+                };
+            };
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddEmailSender(this IServiceCollection services, IConfiguration configuration)
+    {
+        services
+            .AddFluentEmail(configuration["EmailOptions:FromEmail"])
+            .AddLiquidRenderer()
+            .AddSmtpSender(configuration["EmailOptions:Host"], int.Parse(configuration["EmailOptions:Port"]),
+                configuration["EmailOptions:UserName"], configuration["EmailOptions:Password"]);
         return services;
     }
 }

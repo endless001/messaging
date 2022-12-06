@@ -10,6 +10,8 @@
     <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="6.0.2" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="6.0.5" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="FluentEmail.Liquid" Version="3.0.2" />
+    <PackageReference Include="FluentEmail.Smtp" Version="3.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="7.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
@@ -20,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\pkg\EventBus\EventBusRabbitMQ\EventBusRabbitMQ.csproj" />
     <ProjectReference Include="..\..\pkg\EventBus\EventBus\EventBus.csproj" />
+    <ProjectReference Include="..\Messaging.Application\Messaging.Application.csproj" />
   </ItemGroup>
 
 </Project>
