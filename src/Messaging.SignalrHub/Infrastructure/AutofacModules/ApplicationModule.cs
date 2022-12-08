@@ -4,7 +4,7 @@ using Messaging.Infrastructure.Repositories;
 
 namespace Messaging.SignalrHub.Infrastructure.AutofacModules;
 
-public class ApplicationModule : Autofac.Module
+public class ApplicationModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {

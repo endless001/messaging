@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\pkg\EventBus\EventBus\EventBus.csproj" />
-    <ProjectReference Include="..\..\pkg\EventBus\IntegrationEventLogEF\IntegrationEventLogEF.csproj" />
+    <ProjectReference Include="..\..\packages\EventBus\EventBus\EventBus.csproj" />
+    <ProjectReference Include="..\..\packages\EventBus\IntegrationEventLogEF\IntegrationEventLogEF.csproj" />
     <ProjectReference Include="..\Messaging.Infrastructure\Messaging.Infrastructure.csproj" />
   </ItemGroup>
 

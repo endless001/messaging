@@ -1,16 +1,18 @@
+using System.Reflection;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using EventBus;
 using EventBus.Abstractions;
 using EventBusRabbitMQ;
-using FluentEmail.Core;
 using HealthChecks.UI.Client;
+using Messaging.Infrastructure;
 using Messaging.SignalrHub.Infrastructure.AutofacModules;
 using Messaging.SignalrHub.IntegrationEvents.EventHandling;
 using Messaging.SignalrHub.IntegrationEvents.Events;
 using Messaging.SignalrHub.Options;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using RabbitMQ.Client;
 
@@ -33,6 +35,7 @@ public class Startup
             .AddEventBus(Configuration)
             .AddEmailSender(Configuration)
             .AddCustomConfiguration(Configuration)
+            .AddCustomDbContext(Configuration)
             .AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
@@ -202,6 +205,19 @@ public static class CustomExtensionMethods
             .AddLiquidRenderer()
             .AddSmtpSender(configuration["EmailOptions:Host"], int.Parse(configuration["EmailOptions:Port"]),
                 configuration["EmailOptions:UserName"], configuration["EmailOptions:Password"]);
+        return services;
+    }
+
+    public static IServiceCollection AddCustomDbContext(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext<MessagingContext>(options =>
+        {
+            options.UseMySql(MySqlServerVersion.AutoDetect(configuration["ConnectionString"]), options =>
+            {
+                options.MigrationsAssembly(typeof(Startup).GetTypeInfo().Assembly.GetName().Name);
+                options.EnableRetryOnFailure(15, TimeSpan.FromSeconds(30), null);
+            });
+        });
         return services;
     }
 }

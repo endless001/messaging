@@ -102,8 +102,9 @@ public class MessagingContextDesignFactory : IDesignTimeDbContextFactory<Messagi
     public MessagingContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<MessagingContext>()
-            .UseNpgsql("Server=localhost;Port=5432;Database=messaging;User Id=postgres;Password=postgres;");
-        
+            .UseMySql(MySqlServerVersion.AutoDetect(
+                "Server=localhost;Port=5432;Database=messaging;User Id=postgres;Password=postgres;"));
+
         return new MessagingContext(optionsBuilder.Options);
     }
 }

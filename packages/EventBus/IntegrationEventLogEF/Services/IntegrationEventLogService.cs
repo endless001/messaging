@@ -12,7 +12,7 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
         _dbConnection = dbConnection ?? throw new ArgumentNullException(nameof(dbConnection));
         _integrationEventLogContext = new IntegrationEventLogContext(
             new DbContextOptionsBuilder<IntegrationEventLogContext>()
-                .UseNpgsql(_dbConnection)
+                .UseMySql(MySqlServerVersion.AutoDetect(_dbConnection.ConnectionString))
                 .Options);
 
         _eventTypes = Assembly.Load(Assembly.GetEntryAssembly().FullName)

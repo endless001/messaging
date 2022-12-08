@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\pkg\EventBus\EventBusRabbitMQ\EventBusRabbitMQ.csproj" />
-    <ProjectReference Include="..\..\pkg\EventBus\EventBus\EventBus.csproj" />
+    <ProjectReference Include="..\..\packages\EventBus\EventBusRabbitMQ\EventBusRabbitMQ.csproj" />
+    <ProjectReference Include="..\..\packages\EventBus\EventBus\EventBus.csproj" />
     <ProjectReference Include="..\Messaging.Application\Messaging.Application.csproj" />
   </ItemGroup>
 
